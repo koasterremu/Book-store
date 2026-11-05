@@ -28,7 +28,7 @@ export async function startServer(env = {}) {
       ...process.env,
       PORT: String(port), DB_PATH: dbPath,
       ADMIN_EMAIL: ADMIN.email, ADMIN_PASSWORD: ADMIN.password,
-      SESSION_TIMEOUT_MINUTES: '30', SEED_BOOKS: '1', SECURE_COOKIES: '0',
+      SESSION_TIMEOUT_MINUTES: '30', SEED_BOOKS: '1', SECURE_COOKIES: '0', DEMO_CUSTOMER_EMAIL: '',
       ...env,
     },
     stdio: ['ignore', 'pipe', 'pipe'],

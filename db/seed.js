@@ -67,14 +67,22 @@ export function seedBase(db) {
   const insertStore = db.prepare('INSERT OR IGNORE INTO stores (name) VALUES (?)');
   for (const name of STORES) insertStore.run(name);
 
-  if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(config.adminEmail)) return;
-  if (!config.adminPassword) {
-    console.warn('[seed] ADMIN_PASSWORD is not set in .env – the admin account was not created.');
+  ensureUser(db, { email: config.adminEmail, name: config.adminName, password: config.adminPassword, role: 'Administrator', envName: 'ADMIN_PASSWORD' });
+  // Optional demo Customer for manual testing (only when DEMO_CUSTOMER_EMAIL is set in .env).
+  if (config.demoCustomerEmail) {
+    ensureUser(db, { email: config.demoCustomerEmail, name: config.demoCustomerName, password: config.demoCustomerPassword, role: 'Customer', envName: 'DEMO_CUSTOMER_PASSWORD' });
+  }
+}
+
+function ensureUser(db, { email, name, password, role, envName }) {
+  if (db.prepare('SELECT 1 FROM users WHERE email = ?').get(email)) return;
+  if (!password) {
+    console.warn(`[seed] ${envName} is not set in .env – ${email} was not created.`);
     return;
   }
   db.prepare(`INSERT INTO users (email, full_name, password_hash, role, status, created_at)
-    VALUES (?, ?, ?, 'Administrator', 'Active', ?)`).run(config.adminEmail, config.adminName, hashPasswordSync(config.adminPassword), Date.now());
-  console.log(`[seed] Created administrator ${config.adminEmail}`);
+    VALUES (?, ?, ?, ?, 'Active', ?)`).run(email, name, hashPasswordSync(password), role, Date.now());
+  console.log(`[seed] Created ${role.toLowerCase()} ${email}`);
 }
 
 export function seedBooks(db) {
